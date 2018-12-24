@@ -1,4 +1,4 @@
-#define MAX_KEY_LENGTH 999
+#define MAX_KEY_LENGTH 9999
 #define MAX_VALUE_NAME 9999
 #define STR_MAX  9999
 
