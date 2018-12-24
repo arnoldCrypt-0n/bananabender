@@ -11,9 +11,10 @@ int main (int argc, char *argv[]){
     return cod;
 }
 int print_title(){
-fprintf(stdout,"\"HIVE\",\"KEY\",\"cValues\",\"lpftLastWriteTime\",\"cbSecurityDescriptor\",\"DATA\",\"VALUE\"\n");
-            return 0;
+    fprintf(stdout,"\"HIVE\",\"KEY\",\"cValues\",\"lpftLastWriteTime\",\"cbSecurityDescriptor\",\"DATA\",\"VALUE\"\n");
+    return 0;
 }
+
 int set_arg(int argc, char *argv[], Road *road){
     int narg = ( argc - 1 ) / 2 ;
     for(int n = 1;n<=narg;n++){
@@ -72,10 +73,8 @@ int get_all(Road *road){
 
 int query_key(Road *road, KeyInfo *k){
     DWORD retCode;
-    retCode=RegOpenKeyEx( road->hive,road->str, 0, KEY_READ,&k->key);
-    if(retCode){
+    if( ( retCode=RegOpenKeyEx( road->hive,road->str, 0, KEY_READ,&k->key))!=0){
         fprintf(stderr,"Erreur RegOpenKeyEx  \n");
-
         if(retCode==5){
             fprintf(stderr," -> Access is denied (%d) \n",(int)retCode);
             fprintf(stderr," %s  %s \n\n",road->shive,road->str);
@@ -94,20 +93,22 @@ int query_key(Road *road, KeyInfo *k){
         &k->cbMaxValueData,         // longest value data
         &k->cbSecurityDescriptor,   // security descriptor
         &k->ftLastWriteTime);
-
-     }
+    }
     RegCloseKey(k->key);
-
-
-    if(retCode!=0){
+    if(retCode){
+        fprintf(stderr,"Erreur query_key  (%d) ",(int)retCode);
         if(retCode==ERROR_INVALID_HANDLE){
-            fprintf(stderr,"Erreur query_key : ERROR_INVALID_HANDLE (%d) \n",(int)ERROR_INVALID_HANDLE);
+            fprintf(stderr," ERROR_INVALID_HANDLE  (%d) \n",(int)ERROR_INVALID_HANDLE);
+            fprintf(stderr," %s \n\n",road->str);
+        }
+        if(retCode==ERROR_MORE_DATA){
+            fprintf(stderr," ERROR_MORE_DATA (%d) \n",(int)ERROR_MORE_DATA);
+            fprintf(stderr," %s \n\n",road->str);
+        }else{
+            fprintf(stderr," Erreur %d \n",(int)retCode);
             fprintf(stderr," %s \n\n",road->str);
         }
     }
-
-
-
     return (int)retCode;
 }
 
@@ -122,9 +123,9 @@ int get_values(Road *road, KeyInfo *keyinfo){
     enumValue.lpData=valueData;
 
     make_richkey(keyinfo, road);
-
     enumValue.key=keyinfo->key;
     RegOpenKeyEx( road->hive,road->str, 0, KEY_READ,&enumValue.key);
+
     for (enumValue.dwIndex=0, retCode=ERROR_SUCCESS; enumValue.dwIndex<keyinfo->cValues; enumValue.dwIndex++){
         if ( ( retCode = get_data(&enumValue) ) == ERROR_SUCCESS ){
             fprintf(stdout,"%s",road->richkey);
@@ -133,9 +134,9 @@ int get_values(Road *road, KeyInfo *keyinfo){
             fprintf(stderr,"Erreur %d get_data() : ",(int)retCode );
             fprintf(stderr,"dwIndex %d/%d  ",(int)enumValue.dwIndex,(int)keyinfo->cValues );
             if(retCode==ERROR_MORE_DATA){
-                fprintf(stderr,"ERROR_MORE_DATA\n");
+                fprintf(stderr,"ERROR_MORE_DATA : maxvalue : %d\n",(int)keyinfo->cchMaxValue);
             }
-            fprintf(stderr,"(%s)\n\n",road->richkey);
+            fprintf(stderr,"%d(%s)\n\n",(int)keyinfo->cbMaxValueData, road->str);
         }
     }
     RegCloseKey(enumValue.key);
