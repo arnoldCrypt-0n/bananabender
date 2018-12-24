@@ -4,13 +4,10 @@
 #include "main.h"
 
 int main (int argc, char *argv[]){
-    fprintf(stdout, "Hey dude!\n\n");
-    Road road;//={HKEY_LOCAL_MACHINE,""};
+    Road road;
     set_arg(argc, argv, &road);
     print_title();
     int cod = get_all(&road);
-
-    printf("\nYou Win!\n");
     return cod;
 }
 int print_title(){
