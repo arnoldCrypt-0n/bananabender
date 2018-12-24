@@ -4,6 +4,7 @@ Remake reg.exe export
 .\bananabender.exe -h hkcu > hkcu.txt 2>error_hkcu.txt
 
   -h : hkcu, hklm, hkcr, hkcc, hku
+  
   -k : une clé valide (par exemple "Software\Microsoft\Windows\CurrentVersion\Run")
 
 
